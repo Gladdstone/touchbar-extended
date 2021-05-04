@@ -1,0 +1,16 @@
+{
+  "default": [
+    {
+      "f1": {
+        "text": "git status",
+        "command": "git_status"
+      }
+    },
+    {
+      "f2": {
+        "text": "current branch",
+        "command": "git_current_branch"
+      }
+    }
+  ]
+}
