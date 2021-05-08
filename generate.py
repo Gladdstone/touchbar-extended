@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -63,6 +64,36 @@ def load_plugin(zsh_path, plugin_path):
         except Exception as err:
             clean_exit()
 
+def register_plugin():
+    plugins_regex = re.compile('^plugins=\(')
+    plugins_append_match = re.compile('^.*\)')
+
+    zsh_config_path = os.path.join(os.environ.get('HOME'), '.zshrc')
+    zsh_backup_path = os.path.join(os.environ.get('HOME'), '.zshrc')
+    try:
+        # backup .zshrc
+        # shutil.copyfile(zsh_config_path, zsh_backup_path)
+
+        with open(zsh_config_path, 'r') as zsh_config:
+            plugins_marker = False
+            plugins_write = []
+            for line in zsh_config:
+                if plugins_regex.match(line):
+                    plugins_marker = True
+                    if plugins_append_match.match(line):
+                        plugins_write.append(line.strip('\n')[:-1] + ' touchbar-extended)')
+                    else:
+                        plugins_write.append(line)
+                elif plugins_append_match.match(line) and plugins_marker:
+                    plugins_write.append(line.strip('\n')[:-1] + ' touchbar-extended)')
+                else:
+                    plugins_write.append(line)
+        with open(zsh_config_path, 'w') as zsh_config:
+            for line in plugins_write:
+                zsh_config.write(line)
+    except Exception as err:
+        clean_exit('Unable to locate zshconfig plugins. Please register touchbar-extended in .zshrc manually.')
+
 def clean_exit(exit_message: str = ''):
     shutil.rmtree(tmpdir)
     if len(exit_message) < 1:
@@ -120,6 +151,7 @@ plugin_file.close()
 #     clean_exit("Unable to copy file to test location")
 
 load_plugin(zsh_path, plugin_path)
+register_plugin()
 
 print('Plugin generation complete. Please reload your terminal.')
 clean_exit()

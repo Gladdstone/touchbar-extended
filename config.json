@@ -9,7 +9,7 @@
     {
       "2": {
         "text": "git status",
-        "command": "zshconfig"
+        "command": "git_status"
       }
     },
     {
