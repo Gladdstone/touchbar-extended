@@ -5,19 +5,19 @@ import sys
 import tempfile
 
 def display_function(plugin_file):
-    utility_import = r"""source ${0:A:h}/functions.zsh
-        source ${0:A:h}/utility.zsh"""
+    utility_import = ('source ${0:A:h}/functions.zsh\n' 
+        'source ${0:A:h}/utility.zsh\n\n')
 
-    definition = r'function display() {'
-
-    initial_state_clear = r"""if [[ $state != "" ]]; then clear_touchbar; fi
-        remove_and_unbind_keys;
-        state="";"""
+    function_display = ('function display() {\n'
+        '\tif [[ $state != "" ]]; then\n'
+        '\t\tclear_touchbar;\n'
+        '\tfi\n'
+        '\tremove_and_unbind_keys\n'
+        '\tstate=""\n')
     
     plugin_file.write(
         utility_import +
-        definition +
-        initial_state_clear
+        function_display
     )
 
     for i, key in enumerate(json_config['default']):
@@ -26,13 +26,48 @@ def display_function(plugin_file):
         function_name = key[key_value]['command']
         build_key(plugin_file, key_value, key_text, function_name)
 
-    function_termination = r'}'
+    function_display_termination = '}\n\n'
 
-    plugin_file.write(function_termination)
+    function_precmd = ('precmd_touchbar_extended() {\n'
+        '\tdisplay\n'
+        '}\n\n')
+
+    zsh_hook = ('autoload -Uz add-zsh-hook\n'
+        'add-zsh-hook precmd precmd_touchbar_extended\n')
+
+    plugin_file.write(
+        function_display_termination +
+        function_precmd +
+        zsh_hook
+    )
 
 def build_key(file, value, text, func):
-    key_command = ('set_key %s "%s" "%s"' % (value, text, func))
+    key_command = ('\tset_key %s "%s" %s\n' % (value, text, func))
     file.write(key_command)
+
+def load_plugin(zsh_path, plugin_path):
+    if(os.path.exists(zsh_path) and 
+        os.path.isdir(zsh_path)):
+        # support file management
+        function_copy_from_path = os.path.join('scripts', 'functions.zsh')
+        function_copy_to_path = os.path.join(zsh_path, 'functions.zsh')
+        utility_copy_from_path = os.path.join('scripts', 'utility.zsh')
+        utility_copy_to_path = os.path.join(zsh_path, 'utility.zsh')
+        try:
+            shutil.copyfile(function_copy_from_path, function_copy_to_path)
+            shutil.copyfile(utility_copy_from_path, utility_copy_to_path)
+
+            # copy final plugin file
+            plugin_copy_path = os.path.join(zsh_path, 'touchbar-extended.plugin.zsh')
+            shutil.copyfile(plugin_path, plugin_copy_path)
+        except Exception as err:
+            clean_exit()
+
+def clean_exit(exit_message: str = ''):
+    shutil.rmtree(tmpdir)
+    if len(exit_message) < 1:
+        sys.exit(0)
+    sys.exit(exit_message)
 
 print('Executing will clear any customizations made to the touchbar-extended plugins directory.')
 confirm = input('Confirm? [y/n] ')
@@ -78,20 +113,13 @@ display_function(plugin_file)
 
 plugin_file.close()
 
-if(os.path.exists(zsh_path) and 
-    os.path.isdir(zsh_path)):
-    # support file management
-    function_copy_from_path = os.path.join('scripts', 'functions.zsh')
-    function_copy_to_path = os.path.join(zsh_path, 'functions.zsh')
-    utility_copy_from_path = os.path.join('scripts', 'utility.zsh')
-    utility_copy_to_path = os.path.join(zsh_path, 'utility.zsh')
+# testing purposes
+# try:
+#     shutil.copyfile(plugin_path, './touchbar-extended.plugin.zsh')
+# except Exception as err:
+#     clean_exit("Unable to copy file to test location")
 
-    shutil.copyfile(function_copy_from_path, function_copy_to_path)
-    shutil.copyfile(utility_copy_from_path, utility_copy_to_path)
+load_plugin(zsh_path, plugin_path)
 
-    # copy final plugin file
-    plugin_copy_path = os.path.join(zsh_path, 'touchbar-extended.plugin.zsh')
-    shutil.copyfile(plugin_path, plugin_copy_path)
-
-shutil.rmtree(tmpdir) # cleanup
 print('Plugin generation complete. Please reload your terminal.')
+clean_exit()
