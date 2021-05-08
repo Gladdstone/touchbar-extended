@@ -3,6 +3,8 @@
 
 Touchbar Extended will automatically generate and manage custom Touchbar commands based on the functions script and the user's config.json.
 
+Touchbar Extended is still in development. Star and come back, or feel free to open an issue and make a PR.
+
 ## Installation
 
 Git clone Touchbar Extended to your machine
