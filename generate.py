@@ -42,7 +42,7 @@ def display_function(plugin_file):
     )
 
 def build_key(file, value, text, func):
-    key_command = ('\tset_key %s "%s" %s\n' % (value, text, func))
+    key_command = ('\tset_key %s "%s" %s "-s"\n' % (value, text, func))
     file.write(key_command)
 
 def load_plugin(zsh_path, plugin_path):

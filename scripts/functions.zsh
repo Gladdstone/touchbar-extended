@@ -20,3 +20,6 @@ git_current_branch() {
   echo ${ref}
 }
 
+zshconfig() {
+  source ~/.zshrc
+}

@@ -2,13 +2,19 @@
   "default": [
     {
       "1": {
-        "text": "git status",
-        "command": "git_status"
+        "text": "zshconfig",
+        "command": "zshconfig"
       }
     },
     {
       "2": {
-        "text": "current branch",
+        "text": "git status",
+        "command": "zshconfig"
+      }
+    },
+    {
+      "3": {
+        "text": "branch",
         "command": "git_current_branch"
       }
     }
